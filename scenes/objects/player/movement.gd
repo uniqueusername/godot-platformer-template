@@ -38,7 +38,7 @@ var coyote_timer: float = coyote_duration
 # runs when the scene is ready--initial configuration
 func _ready():
 	animated = sprite != null
-	calculate_jump(jump_height)
+	jump_speed = calculate_jump(jump_height)
 	ground_ray.target_position = Vector2(0, sticky_distance)
 
 # runs every frame

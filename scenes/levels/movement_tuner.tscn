@@ -160,6 +160,9 @@ func _input(event):
 	if event.is_action_pressed(\"reset\"):
 		player.cancel_movement()
 		player.position = Vector2.ZERO
+		
+	if event.is_action_pressed(\"exit\"):
+		get_tree().quit()
 
 # re-place spawner relative to viewport size
 func reposition():
