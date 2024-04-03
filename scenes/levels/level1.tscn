@@ -21,7 +21,7 @@ script = SubResource("GDScript_5keul")
 [node name="player" parent="." instance=ExtResource("1_7yvad")]
 position = Vector2(171, 178)
 
-[node name="Camera2D" type="Camera2D" parent="player"]
+[node name="camera" type="Camera2D" parent="player"]
 position_smoothing_enabled = true
 
 [node name="walls" type="TileMap" parent="."]
