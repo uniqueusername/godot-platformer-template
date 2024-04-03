@@ -1,0 +1,45 @@
+[gd_scene load_steps=9 format=3 uid="uid://djfmm3p770m7v"]
+
+[ext_resource type="Script" path="res://scenes/objects/placeable_platform/placeable_platform.gd" id="1_cjtxp"]
+[ext_resource type="Shader" path="res://assets/shaders/platform_hover.gdshader" id="2_0ngnd"]
+[ext_resource type="Shader" path="res://assets/shaders/platform.gdshader" id="2_2hor0"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3ffts"]
+shader = ExtResource("2_2hor0")
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_sijrm"]
+specular_color = Color(0.698039, 0, 0.392157, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_n1onl"]
+shader = ExtResource("2_0ngnd")
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_1l3gn"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cemrk"]
+size = Vector2(16, 16)
+
+[node name="platform" type="StaticBody2D"]
+top_level = true
+z_index = -1
+collision_layer = 5
+collision_mask = 0
+input_pickable = true
+script = ExtResource("1_cjtxp")
+
+[node name="sprite" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_3ffts")
+scale = Vector2(16, 16)
+texture = SubResource("CanvasTexture_sijrm")
+
+[node name="hover" type="Sprite2D" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_n1onl")
+scale = Vector2(16, 16)
+texture = SubResource("CanvasTexture_1l3gn")
+
+[node name="collider" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_cemrk")
+
+[connection signal="input_event" from="." to="." method="_on_input_event"]
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

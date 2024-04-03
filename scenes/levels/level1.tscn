@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3 uid="uid://b7mc7ksjgadup"]
+
+[ext_resource type="PackedScene" uid="uid://djw71ie8wroqe" path="res://scenes/objects/player/player.tscn" id="1_7yvad"]
+[ext_resource type="TileSet" uid="uid://rlkl4qdm0mes" path="res://assets/tiles/arcade.tres" id="2_qxr1t"]
+
+[sub_resource type="GDScript" id="GDScript_5keul"]
+resource_name = "level1"
+script/source = "extends Node2D
+
+func _input(event):
+	if event.is_action_pressed(\"reset\"):
+		get_tree().reload_current_scene()
+		
+	if event.is_action_pressed(\"exit\"):
+		get_tree().quit()
+"
+
+[node name="level1" type="Node2D"]
+script = SubResource("GDScript_5keul")
+
+[node name="player" parent="." instance=ExtResource("1_7yvad")]
+position = Vector2(171, 178)
+
+[node name="walls" type="TileMap" parent="."]
+tile_set = ExtResource("2_qxr1t")
+format = 2
+layer_0/tile_data = PackedInt32Array(1114117, 131072, 1, 1114118, 131072, 0, 1114119, 131072, 0, 1114120, 131072, 0, 1114121, 131072, 0, 1114122, 131072, 0, 1114123, 131072, 0, 1114124, 131072, 0, 1114125, 131072, 0, 1114126, 131072, 0, 1114127, 196608, 1, 1310738, 131072, 1, 1310739, 131072, 0, 1310740, 131072, 0, 1310741, 131072, 0, 1310742, 196608, 1, 917524, 131072, 0, 917525, 131072, 0, 917526, 65536, 3, 1048603, 0, 0, 1048608, 0, 0, 589859, 196608, 1, 589858, 131072, 0, 589857, 131072, 0, 589856, 131072, 0, 589855, 131072, 0, 589854, 131072, 1, 1048596, 131072, 0, 1048597, 131072, 0, 1048598, 196608, 3, 983062, 196608, 0, 851976, 0, 0, 786439, 0, 0, 720902, 0, 0, 524298, 0, 3, 524299, 196608, 3, 458763, 0, 3, 458764, 196608, 3, 393228, 0, 1, 917513, 0, 0, 589834, 196608, 3, 589833, 131072, 1, 917523, 0, 3, 983059, 196608, 0, 1048595, 131072, 3, 1114140, 131072, 1, 1114141, 131072, 0, 1114142, 131072, 0, 1114143, 196608, 1)

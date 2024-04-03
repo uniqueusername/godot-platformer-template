@@ -1,0 +1,412 @@
+[gd_scene load_steps=17 format=3 uid="uid://chledrc08mf0n"]
+
+[ext_resource type="PackedScene" uid="uid://wppivb7axvby" path="res://scenes/ui/slider/config_slider.tscn" id="2_86j7g"]
+[ext_resource type="Shader" path="res://assets/shaders/platform.gdshader" id="3_8bf5h"]
+[ext_resource type="Shader" path="res://assets/shaders/platform_target.gdshader" id="4_fjqrq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lxapw"]
+bg_color = Color(0.380392, 0.380392, 0.380392, 0.784314)
+
+[sub_resource type="GDScript" id="GDScript_a2dy6"]
+resource_name = "movement_configurator"
+script/source = "extends VBoxContainer
+
+# movement component to send config too
+var movement: Node2D
+
+@onready var start_accel = $start_accel
+@onready var stop_accel = $stop_accel
+@onready var max_speed = $max_speed
+@onready var jump_height = $jump_height
+@onready var sticky_distance = $sticky_distance
+@onready var coyote_duration = $coyote_duration
+@onready var first_half_grav = $first_half_grav
+@onready var second_half_grav = $second_half_grav
+@onready var air_strafe_multiplier = $air_strafe_multiplier
+
+# send values from ui to movement component
+func send_config():
+	if movement:
+		movement.update_config(
+			start_accel.value,
+			stop_accel.value,
+			max_speed.value,
+			jump_height.value,
+			sticky_distance.value,
+			coyote_duration.value,
+			first_half_grav.value,
+			second_half_grav.value,
+			air_strafe_multiplier.value
+		)
+
+# retrieve defaults from movement component
+func set_movement_component(component):
+	movement = component
+	start_accel.value = movement.start_accel
+	stop_accel.value = movement.stop_accel
+	max_speed.value = movement.max_speed
+	jump_height.value = movement.jump_height
+	sticky_distance.value = movement.sticky_distance
+	coyote_duration.value = movement.coyote_duration
+	first_half_grav.value = movement.first_half_grav
+	second_half_grav.value = movement.second_half_grav
+	air_strafe_multiplier.value = movement.air_strafe_multiplier
+
+func _on_start_accel_value_changed(_value: float):
+	send_config()
+
+func _on_stop_accel_value_changed(_value: float):
+	send_config()
+
+func _on_max_speed_value_changed(_value: float):
+	send_config()
+
+func _on_jump_height_value_changed(_value: float):
+	send_config()
+	
+func _on_sticky_distance_value_changed(_value: float):
+	send_config()
+
+func _on_coyote_duration_value_changed(_value: float):
+	send_config()
+
+func _on_first_half_grav_value_changed(_value: float):
+	send_config()
+
+func _on_second_half_grav_value_changed(_value: float):
+	send_config()
+
+func _on_air_strafe_multiplier_value_changed(_value: float):
+	send_config()
+"
+
+[sub_resource type="GDScript" id="GDScript_1q2na"]
+resource_name = "floor"
+script/source = "extends Node2D
+
+@export_range(0, 2000, 0.5, \"or_greater\") var gap_width: float = 400:
+	get: return gap_width
+	set(value):
+		gap_width = value
+		update_platforms()
+
+@export_range(32, 320, 0.5, \"or_greater\") var platform_height: float = 48:
+	get: return platform_height
+	set(value): 
+		platform_height = value
+		update_platforms()
+
+func _ready():
+	get_tree().get_root().size_changed.connect(update_platforms)
+	update_platforms()
+
+# update platforms with new information (including viewport changes)
+func update_platforms():
+	var viewport_size: Vector2 = get_viewport_rect().size
+	
+	if ($left == null || $right == null): return
+	position.x = viewport_size.x / 2
+	
+	# place sprites
+	$left/sprite.scale = Vector2(viewport_size.x/2 - gap_width/2, platform_height)
+	$right/sprite.scale = Vector2(viewport_size.x/2 - gap_width/2, platform_height)
+	
+	$left.position = Vector2(
+		-viewport_size.x/2 + $left/sprite.scale.x/2,
+		viewport_size.y - platform_height/2)
+	$right.position = Vector2(
+		viewport_size.x/2 - $right/sprite.scale.x/2,
+		viewport_size.y - platform_height/2)
+		
+	# place collision boxes
+	$left/collider.shape.size = $left/sprite.scale
+	$right/collider.shape.size = $right/sprite.scale
+
+func _on_gap_width_value_changed(value):
+	gap_width = value
+	update_platforms()
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3ptks"]
+shader = ExtResource("3_8bf5h")
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_1yc25"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u3jlu"]
+size = Vector2(250, 16)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_55wyp"]
+shader = ExtResource("3_8bf5h")
+
+[sub_resource type="GDScript" id="GDScript_f2i7w"]
+resource_name = "player_spawner"
+script/source = "extends Node2D
+
+@export var movement_tuner: Control # connect movement tuner to player
+var player_scene = preload(\"res://scenes/objects/player/player.tscn\")
+var player: Node
+
+func _ready():
+	get_tree().get_root().size_changed.connect(reposition)
+	reposition()
+	
+	player = player_scene.instantiate()
+	if movement_tuner and player.get_node_or_null(\"movement\"):
+		movement_tuner.set_movement_component(player.get_node(\"movement\"))
+	player.position = Vector2.ZERO
+	add_child(player)
+
+func _input(event):
+	if event.is_action_pressed(\"reset\"):
+		player.cancel_movement()
+		player.position = Vector2.ZERO
+
+# re-place spawner relative to viewport size
+func reposition():
+	global_position = Vector2(48, get_viewport_rect().size.y - 128)
+"
+
+[sub_resource type="GDScript" id="GDScript_2jk7r"]
+resource_name = "platform_spawner"
+script/source = "extends Area2D
+
+var mouse_over_ui: bool = false
+
+func _process(_delta):
+	global_position = get_viewport().get_mouse_position()
+	if get_overlapping_bodies().size() == 0 and !mouse_over_ui:
+		$platform_placeholder.visible = true
+		$platform_placeholder.can_place = true
+
+func _on_body_entered(body):
+	if body.scene_file_path == $platform_placeholder.platform_scene.resource_path:
+		$platform_placeholder.visible = false
+		$platform_placeholder.can_place = false
+
+func _on_panel_container_mouse_entered():
+	mouse_over_ui = true
+	$platform_placeholder.visible = false
+	$platform_placeholder.can_place = false
+
+func _on_panel_container_mouse_exited():
+	mouse_over_ui = false
+"
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_8svsw"]
+radius = 5.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7h46s"]
+shader = ExtResource("4_fjqrq")
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_fhjy2"]
+
+[sub_resource type="GDScript" id="GDScript_6ie38"]
+resource_name = "platform_spawner"
+script/source = "extends Node2D
+
+var platform_scene = load(\"res://scenes/objects/placeable_platform/platform.tscn\")
+var can_place: bool = true
+
+func _input(event):
+	if event.is_action_pressed(\"grow_block\"):
+		scale.x += 32
+	if event.is_action_pressed(\"shrink_block\") and scale.x > 32:
+		scale.x -= 32
+	
+	if event.is_action_pressed(\"click\") and can_place:
+		var platform = platform_scene.instantiate()
+		platform.global_position = global_position
+		platform.width = scale.x
+		get_parent().add_child(platform)
+"
+
+[node name="movement_tuner" type="Node2D"]
+
+[node name="gui" type="CanvasLayer" parent="."]
+
+[node name="MarginContainer" type="MarginContainer" parent="gui"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="PanelContainer" type="PanelContainer" parent="gui/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_lxapw")
+
+[node name="MarginContainer" type="MarginContainer" parent="gui/MarginContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="configurator" type="VBoxContainer" parent="gui/MarginContainer/PanelContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_constants/separation = 0
+script = SubResource("GDScript_a2dy6")
+
+[node name="gap_width" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Gap Width"
+max_value = 600.0
+value = 100.0
+tooltip = "Size of the gap in the middle of the level."
+
+[node name="HSeparator" type="HSeparator" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator"]
+layout_mode = 2
+
+[node name="start_accel" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Start Acceleration"
+min_value = 10.0
+max_value = 600.0
+value = 100.0
+tooltip = "Rate player accelerates in the direction being pressed."
+
+[node name="stop_accel" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Stop Acceleration"
+min_value = 10.0
+max_value = 600.0
+value = 150.0
+exponential = true
+tooltip = "Rate character decelerates to a stop
+when no inputs are pressed."
+
+[node name="max_speed" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Max Speed"
+min_value = 10.0
+max_value = 800.0
+value = 200.0
+tooltip = "Maximum speed of player."
+
+[node name="HSeparator2" type="HSeparator" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator"]
+layout_mode = 2
+
+[node name="jump_height" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Jump Height"
+min_value = 4.0
+max_value = 300.0
+value = 48.0
+tooltip = "How high the player jumps in pixels."
+
+[node name="sticky_distance" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Sticky Distance"
+max_value = 40.0
+step = 2.08165e-12
+value = 10.0
+tooltip = "How close the player needs to be to
+the ground before they can jump."
+
+[node name="coyote_duration" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Coyote Time"
+max_value = 0.3
+step = 2.08165e-12
+value = 0.1
+tooltip = "Seconds that the player can still
+jump after leaving a platform."
+
+[node name="HSeparator3" type="HSeparator" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator"]
+layout_mode = 2
+
+[node name="first_half_grav" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Jumping Gravity"
+min_value = 32.0
+max_value = 8000.0
+value = 980.0
+tooltip = "Force of gravity when the
+player is moving up."
+
+[node name="second_half_grav" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Falling Gravity"
+min_value = 32.0
+max_value = 8000.0
+value = 980.0
+tooltip = "Force of gravity when the
+player is moving down."
+
+[node name="air_strafe_multiplier" parent="gui/MarginContainer/PanelContainer/MarginContainer/configurator" instance=ExtResource("2_86j7g")]
+layout_mode = 2
+label = "Air Strafe Multiplier"
+max_value = 1.0
+step = 2.08165e-12
+value = 0.2
+tooltip = "How quickly can the player change 
+directions in mid-air (1 is 
+ground-speed, 0 is not at all)."
+
+[node name="floor" type="Node2D" parent="."]
+position = Vector2(320, 2.08165e-12)
+script = SubResource("GDScript_1q2na")
+
+[node name="left" type="StaticBody2D" parent="floor"]
+position = Vector2(-195, 352)
+
+[node name="sprite" type="Sprite2D" parent="floor/left"]
+material = SubResource("ShaderMaterial_3ptks")
+scale = Vector2(250, 16)
+texture = SubResource("CanvasTexture_1yc25")
+
+[node name="collider" type="CollisionShape2D" parent="floor/left"]
+shape = SubResource("RectangleShape2D_u3jlu")
+
+[node name="right" type="StaticBody2D" parent="floor"]
+position = Vector2(195, 352)
+
+[node name="sprite" type="Sprite2D" parent="floor/right"]
+material = SubResource("ShaderMaterial_55wyp")
+position = Vector2(2.08165e-12, 2.08165e-12)
+scale = Vector2(250, 16)
+texture = SubResource("CanvasTexture_1yc25")
+
+[node name="collider" type="CollisionShape2D" parent="floor/right"]
+shape = SubResource("RectangleShape2D_u3jlu")
+
+[node name="player_spawner" type="Node2D" parent="." node_paths=PackedStringArray("movement_tuner")]
+position = Vector2(48, 584)
+script = SubResource("GDScript_f2i7w")
+movement_tuner = NodePath("../gui/MarginContainer/PanelContainer/MarginContainer/configurator")
+
+[node name="platform_spawner" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 4
+script = SubResource("GDScript_2jk7r")
+
+[node name="collider" type="CollisionShape2D" parent="platform_spawner"]
+shape = SubResource("CircleShape2D_8svsw")
+
+[node name="platform_placeholder" type="Sprite2D" parent="platform_spawner"]
+material = SubResource("ShaderMaterial_7h46s")
+scale = Vector2(60, 16)
+texture = SubResource("CanvasTexture_fhjy2")
+script = SubResource("GDScript_6ie38")
+
+[connection signal="mouse_entered" from="gui/MarginContainer/PanelContainer" to="platform_spawner" method="_on_panel_container_mouse_entered"]
+[connection signal="mouse_exited" from="gui/MarginContainer/PanelContainer" to="platform_spawner" method="_on_panel_container_mouse_exited"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/gap_width" to="floor" method="_on_gap_width_value_changed"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/start_accel" to="gui/MarginContainer/PanelContainer/MarginContainer/configurator" method="_on_start_accel_value_changed"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/stop_accel" to="gui/MarginContainer/PanelContainer/MarginContainer/configurator" method="_on_stop_accel_value_changed"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/max_speed" to="gui/MarginContainer/PanelContainer/MarginContainer/configurator" method="_on_max_speed_value_changed"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/jump_height" to="gui/MarginContainer/PanelContainer/MarginContainer/configurator" method="_on_jump_height_value_changed"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/sticky_distance" to="gui/MarginContainer/PanelContainer/MarginContainer/configurator" method="_on_sticky_distance_value_changed"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/coyote_duration" to="gui/MarginContainer/PanelContainer/MarginContainer/configurator" method="_on_coyote_duration_value_changed"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/first_half_grav" to="gui/MarginContainer/PanelContainer/MarginContainer/configurator" method="_on_first_half_grav_value_changed"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/second_half_grav" to="gui/MarginContainer/PanelContainer/MarginContainer/configurator" method="_on_second_half_grav_value_changed"]
+[connection signal="value_changed" from="gui/MarginContainer/PanelContainer/MarginContainer/configurator/air_strafe_multiplier" to="gui/MarginContainer/PanelContainer/MarginContainer/configurator" method="_on_air_strafe_multiplier_value_changed"]
+[connection signal="body_entered" from="platform_spawner" to="platform_spawner" method="_on_body_entered"]

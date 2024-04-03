@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3 uid="uid://wppivb7axvby"]
+
+[ext_resource type="Script" path="res://scenes/ui/slider/config_slider.gd" id="1_wb8wg"]
+[ext_resource type="Theme" uid="uid://dnsb0gnweikot" path="res://assets/theme.tres" id="2_nm3am"]
+
+[node name="config_slider" type="HBoxContainer"]
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_constants/separation = 10
+script = ExtResource("1_wb8wg")
+
+[node name="label" type="Label" parent="."]
+layout_mode = 2
+theme = ExtResource("2_nm3am")
+text = "Label"
+
+[node name="slider" type="HSlider" parent="."]
+custom_minimum_size = Vector2(66, 2.08165e-12)
+layout_mode = 2
+theme = ExtResource("2_nm3am")
+step = 0.5
+
+[node name="value" type="Label" parent="."]
+custom_minimum_size = Vector2(20, 2.08165e-12)
+layout_mode = 2
+theme = ExtResource("2_nm3am")
+text = "????"
+clip_text = true
+visible_characters = 5
+visible_ratio = 1.25
+
+[connection signal="value_changed" from="slider" to="." method="_on_slider_value_changed"]
