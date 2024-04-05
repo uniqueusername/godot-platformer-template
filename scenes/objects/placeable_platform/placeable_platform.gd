@@ -12,7 +12,7 @@ var invulnerable: bool = true
 
 func _ready():
 	$collider.shape = RectangleShape2D.new()
-	$collider.shape.size.x = width
+	$collider.shape.size = Vector2(width, 16)
 
 func _on_mouse_entered():
 	mouse_inside = true
