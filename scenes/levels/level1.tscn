@@ -11,7 +11,7 @@ var tuner_scene: PackedScene = preload(\"res://scenes/levels/movement_tuner.tscn
 
 func _input(event):
 	if event.is_action_pressed(\"reset\"):
-		get_tree().reload_current_scene()
+		get_tree().change_scene_to_file(\"res://scenes/levels/level1.tscn\")
 	
 	if event.is_action_pressed(\"exit\"):
 		get_tree().quit()

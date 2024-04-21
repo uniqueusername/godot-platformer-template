@@ -5,6 +5,10 @@ a 2d godot platformer template project with a customizable player controller and
 
 the template includes a base level with a pre-configured tilemap, an animated player character with a customizable movement controller (including platformer quality of life features like movement curve tuning and coyote time), and an in-game control and movement tuner.
 
+## gameplay
+
+the player character can be moved with WASD, arrow keys, or a controller. press tab to switch between the level scene and the movement tuner scene (if you add more levels, you may want to remove the code that does this!).
+
 ## using the movement tuner
 
 1. load the `movement_tuner` scene and click "run current scene"
