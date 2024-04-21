@@ -143,6 +143,7 @@ resource_name = "player_spawner"
 script/source = "extends Node2D
 
 @export var movement_tuner: Control # connect movement tuner to player
+var level_scene = preload(\"res://scenes/levels/level1.tscn\")
 var player_scene = preload(\"res://scenes/objects/player/player.tscn\")
 var player: Node
 
@@ -160,9 +161,9 @@ func _input(event):
 	if event.is_action_pressed(\"reset\"):
 		player.cancel_movement()
 		player.position = Vector2.ZERO
-		
-	if event.is_action_pressed(\"exit\"):
-		get_tree().quit()
+	
+	if event.is_action_pressed(\"tab\"):
+		get_tree().change_scene_to_packed(level_scene)
 
 # re-place spawner relative to viewport size
 func reposition():

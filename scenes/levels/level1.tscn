@@ -7,12 +7,17 @@
 resource_name = "level1"
 script/source = "extends Node2D
 
+var tuner_scene: PackedScene = preload(\"res://scenes/levels/movement_tuner.tscn\")
+
 func _input(event):
 	if event.is_action_pressed(\"reset\"):
 		get_tree().reload_current_scene()
-		
+	
 	if event.is_action_pressed(\"exit\"):
 		get_tree().quit()
+	
+	if event.is_action_pressed(\"tab\"):
+		get_tree().change_scene_to_packed(tuner_scene)
 "
 
 [node name="level1" type="Node2D"]
