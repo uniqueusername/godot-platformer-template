@@ -1,35 +1,54 @@
-[gd_scene load_steps=4 format=3 uid="uid://b7mc7ksjgadup"]
+[gd_scene load_steps=5 format=3 uid="uid://b7mc7ksjgadup"]
 
-[ext_resource type="PackedScene" uid="uid://djw71ie8wroqe" path="res://scenes/objects/player/player.tscn" id="1_7yvad"]
-[ext_resource type="TileSet" uid="uid://rlkl4qdm0mes" path="res://assets/tiles/arcade.tres" id="2_qxr1t"]
+[ext_resource type="PackedScene" uid="uid://djw71ie8wroqe" path="res://objects/gameplay/player/player.tscn" id="1_jdgvt"]
+[ext_resource type="TileSet" uid="uid://rlkl4qdm0mes" path="res://assets/tiles/arcade.tres" id="2_lo284"]
 
 [sub_resource type="GDScript" id="GDScript_5keul"]
 resource_name = "level1"
 script/source = "extends Node2D
 
-var tuner_scene: PackedScene = preload(\"res://scenes/levels/movement_tuner.tscn\")
+var tuner_scene: PackedScene = preload(\"res://levels/movement_tuner.tscn\")
 
 func _input(event):
 	if event.is_action_pressed(\"reset\"):
-		get_tree().change_scene_to_file(\"res://scenes/levels/level1.tscn\")
+		reset()
 	
 	if event.is_action_pressed(\"exit\"):
 		get_tree().quit()
 	
 	if event.is_action_pressed(\"tab\"):
 		get_tree().change_scene_to_packed(tuner_scene)
+
+# resets the level
+func reset():
+	get_tree().change_scene_to_file(\"res://levels/level1.tscn\")
+
+func _on_world_boundary_body_entered(body):
+	if body == $player: reset()
 "
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_8blul"]
+distance = -1000.0
 
 [node name="level1" type="Node2D"]
 script = SubResource("GDScript_5keul")
 
-[node name="player" parent="." instance=ExtResource("1_7yvad")]
+[node name="player" parent="." instance=ExtResource("1_jdgvt")]
 position = Vector2(171, 178)
 
 [node name="camera" type="Camera2D" parent="player"]
 position_smoothing_enabled = true
 
 [node name="walls" type="TileMap" parent="."]
-tile_set = ExtResource("2_qxr1t")
+tile_set = ExtResource("2_lo284")
 format = 2
 layer_0/tile_data = PackedInt32Array(1114117, 131072, 1, 1114118, 131072, 0, 1114119, 131072, 0, 1114120, 131072, 0, 1114121, 131072, 0, 1114122, 131072, 0, 1114123, 131072, 0, 1114124, 131072, 0, 1114125, 131072, 0, 1114126, 131072, 0, 1114127, 196608, 1, 1310738, 131072, 1, 1310739, 131072, 0, 1310740, 131072, 0, 1310741, 131072, 0, 1310742, 196608, 1, 917524, 131072, 0, 917525, 131072, 0, 917526, 65536, 3, 1048603, 0, 0, 1048608, 0, 0, 589859, 196608, 1, 589858, 131072, 0, 589857, 131072, 0, 589856, 131072, 0, 589855, 131072, 0, 589854, 131072, 1, 1048596, 131072, 0, 1048597, 131072, 0, 1048598, 196608, 3, 983062, 196608, 0, 851976, 0, 0, 786439, 0, 0, 720902, 0, 0, 524298, 0, 3, 524299, 196608, 3, 458763, 0, 3, 458764, 196608, 3, 393228, 0, 1, 917513, 0, 0, 589834, 196608, 3, 589833, 131072, 1, 917523, 0, 3, 983059, 196608, 0, 1048595, 131072, 3, 1114140, 131072, 1, 1114141, 131072, 0, 1114142, 131072, 0, 1114143, 196608, 1)
+
+[node name="world_boundary" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="world_boundary"]
+shape = SubResource("WorldBoundaryShape2D_8blul")
+
+[connection signal="body_entered" from="world_boundary" to="." method="_on_world_boundary_body_entered"]

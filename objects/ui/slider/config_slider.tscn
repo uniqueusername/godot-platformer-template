@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://wppivb7axvby"]
 
-[ext_resource type="Script" path="res://scenes/ui/slider/config_slider.gd" id="1_wb8wg"]
+[ext_resource type="Script" path="res://objects/ui/slider/config_slider.gd" id="1_wb8wg"]
 [ext_resource type="Theme" uid="uid://dnsb0gnweikot" path="res://assets/theme.tres" id="2_nm3am"]
 
 [node name="config_slider" type="HBoxContainer"]

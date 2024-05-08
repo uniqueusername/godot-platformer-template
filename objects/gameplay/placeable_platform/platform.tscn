@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://djfmm3p770m7v"]
 
-[ext_resource type="Script" path="res://scenes/objects/placeable_platform/placeable_platform.gd" id="1_cjtxp"]
+[ext_resource type="Script" path="res://objects/gameplay/placeable_platform/placeable_platform.gd" id="1_cjtxp"]
 [ext_resource type="Shader" path="res://assets/shaders/platform_hover.gdshader" id="2_0ngnd"]
 [ext_resource type="Shader" path="res://assets/shaders/platform.gdshader" id="2_2hor0"]
 
